@@ -20,6 +20,8 @@ pub enum AuthZBackend {
     AllowAll,
     #[serde(rename = "openfga")]
     OpenFGA,
+    #[serde(rename = "opa")]
+    OPA,
 }
 
 #[derive(Debug, Deserialize, utoipa::ToSchema, TypedBuilder)]
@@ -196,6 +198,7 @@ pub(crate) trait Service<C: Catalog, A: Authorizer, S: SecretStore> {
             authz_backend: match CONFIG.authz_backend {
                 config::AuthZBackend::AllowAll => AuthZBackend::AllowAll,
                 config::AuthZBackend::OpenFGA => AuthZBackend::OpenFGA,
+                config::AuthZBackend::OPA => AuthZBackend::OPA,
             },
             aws_system_identities_enabled: CONFIG.enable_aws_system_credentials,
             azure_system_identities_enabled: CONFIG.enable_azure_system_credentials,

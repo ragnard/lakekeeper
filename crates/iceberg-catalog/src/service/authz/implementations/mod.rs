@@ -8,6 +8,9 @@ use crate::{
 
 pub(super) mod allow_all;
 
+#[cfg(feature = "authz-opa")]
+pub mod opa;
+
 #[cfg(feature = "authz-openfga")]
 pub mod openfga;
 
@@ -21,6 +24,7 @@ pub async fn get_default_authorizer_from_config() -> Result<Authorizers, ErrorMo
     match &CONFIG.authz_backend {
         AuthZBackend::AllowAll => Ok(allow_all::AllowAllAuthorizer.into()),
         AuthZBackend::OpenFGA => Ok(openfga::new_authorizer_from_config().await?),
+        AuthZBackend::OPA => Ok(opa::new_authorizer_from_config().await?),
     }
 }
 
@@ -38,6 +42,7 @@ pub async fn migrate_default_authorizer() -> std::result::Result<(), ErrorModel>
             openfga::migrate(&client, store_name).await?;
             Ok(())
         }
+        AuthZBackend::OPA => Ok(()),
     }
 }
 
@@ -62,6 +67,7 @@ pub enum FgaType {
 pub enum Authorizers {
     AllowAll(allow_all::AllowAllAuthorizer),
     OpenFGA(openfga::OpenFGAAuthorizer),
+    OPA(opa::OPAAuthorizer),
 }
 
 impl From<allow_all::AllowAllAuthorizer> for Authorizers {
@@ -76,6 +82,7 @@ impl HealthExt for Authorizers {
         match self {
             Self::AllowAll(authorizer) => authorizer.health().await,
             Self::OpenFGA(authorizer) => authorizer.health().await,
+            Self::OPA(authorizer) => authorizer.health().await,
         }
     }
 
@@ -83,6 +90,7 @@ impl HealthExt for Authorizers {
         match self {
             Self::AllowAll(authorizer) => authorizer.update_health().await,
             Self::OpenFGA(authorizer) => authorizer.update_health().await,
+            Self::OPA(authorizer) => authorizer.update_health().await,
         }
     }
 }

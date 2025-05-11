@@ -4,7 +4,9 @@ use clap::{Parser, Subcommand};
 use iceberg_catalog::{
     api::management::v1::api_doc as v1_api_doc,
     service::authz::{
-        implementations::openfga::UnauthenticatedOpenFGAAuthorizer, AllowAllAuthorizer,
+        implementations::opa::UnauthenticatedOPAAuthorizer,
+        implementations::openfga::UnauthenticatedOpenFGAAuthorizer,
+        AllowAllAuthorizer,
     },
     AuthZBackend, CONFIG,
 };
@@ -173,6 +175,7 @@ async fn main() -> anyhow::Result<()> {
             let doc = match CONFIG.authz_backend {
                 AuthZBackend::AllowAll => v1_api_doc::<AllowAllAuthorizer>(),
                 AuthZBackend::OpenFGA => v1_api_doc::<UnauthenticatedOpenFGAAuthorizer>(),
+                AuthZBackend::OPA => v1_api_doc::<UnauthenticatedOPAAuthorizer>(),
             };
             println!("{}", doc.to_yaml()?);
         }

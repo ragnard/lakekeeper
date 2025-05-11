@@ -148,6 +148,17 @@ pub(crate) async fn serve(bind_addr: std::net::SocketAddr) -> Result<(), anyhow:
             )
             .await?
         }
+        Authorizers::OPA(a) => {
+            serve_with_authn(
+                a,
+                catalog_state,
+                secrets_state,
+                queues,
+                health_provider,
+                listener,
+            )
+            .await?
+        }
     }
 
     Ok(())
@@ -170,9 +181,9 @@ async fn serve_with_authn<A: Authorizer>(
                     .clone()
                     .unwrap_or_default(),
             )
-            .await
-            .inspect_err(|e| tracing::error!("Failed to create K8s authorizer: {e}"))
-            .inspect(|v| tracing::info!("K8s authorizer created {:?}", v))?,
+                .await
+                .inspect_err(|e| tracing::error!("Failed to create K8s authorizer: {e}"))
+                .inspect(|v| tracing::info!("K8s authorizer created {:?}", v))?,
         )
     } else {
         tracing::info!("Running without Kubernetes authentication.");
@@ -186,8 +197,8 @@ async fn serve_with_authn<A: Authorizer>(
                 Some(K8S_IDP_ID),
                 vec![],
             )
-            .await
-            .inspect_err(|e| tracing::error!("Failed to create K8s authorizer: {e}"))?;
+                .await
+                .inspect_err(|e| tracing::error!("Failed to create K8s authorizer: {e}"))?;
         authenticator.set_issuers(vec!["kubernetes/serviceaccount".to_string()]);
         tracing::info!(
             "K8s authorizer for legacy service account tokens created {:?}",
@@ -205,8 +216,8 @@ async fn serve_with_authn<A: Authorizer>(
             uri.as_ref(),
             Some(std::time::Duration::from_secs(3600)),
         )
-        .await?
-        .set_idp_id(OIDC_IDP_ID);
+            .await?
+            .set_idp_id(OIDC_IDP_ID);
         if let Some(aud) = &CONFIG.openid_audience {
             tracing::debug!("Setting accepted audiences: {aud:?}");
             authenticator = authenticator.set_accepted_audiences(aud.clone());
@@ -258,7 +269,7 @@ async fn serve_with_authn<A: Authorizer>(
                 health_provider,
                 listener,
             )
-            .await
+                .await
         }
         (None, Some(auth1), Some(auth2))
         | (Some(auth1), None, Some(auth2))
@@ -277,7 +288,7 @@ async fn serve_with_authn<A: Authorizer>(
                 health_provider,
                 listener,
             )
-            .await
+                .await
         }
         (Some(auth), None, None) | (None, Some(auth), None) | (None, None, Some(auth)) => {
             serve_inner(
@@ -289,7 +300,7 @@ async fn serve_with_authn<A: Authorizer>(
                 health_provider,
                 listener,
             )
-            .await
+                .await
         }
         (None, None, None) => {
             tracing::warn!("Authentication is disabled. This is not suitable for production!");
@@ -302,7 +313,7 @@ async fn serve_with_authn<A: Authorizer>(
                 health_provider,
                 listener,
             )
-            .await
+                .await
         }
     }
 }

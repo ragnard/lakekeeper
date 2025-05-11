@@ -414,6 +414,8 @@ pub enum AuthZBackend {
     AllowAll,
     #[serde(alias = "openfga", alias = "OpenFGA", alias = "OPENFGA")]
     OpenFGA,
+    #[serde(alias = "opa", alias = "OPA", )]
+    OPA,
 }
 
 impl Default for AuthZBackend {
